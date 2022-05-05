@@ -95,7 +95,10 @@ process.source = cms.Source("PoolSource",
 fileNames = cms.untracked.vstring(
 'file:aca7b050-5990-4576-a9ee-f41ac82e5b86.root'
 ),
-skipEvents=cms.untracked.uint32(0)
+skipEvents=cms.untracked.uint32(0),
+inputCommands = cms.untracked.vstring(
+        'keep *','drop *_offlinePrimaryVertices_*_*'
+    )
 )
 
 if options.timing:
@@ -127,9 +130,13 @@ if options.timing:
 
 
 
-process.vertexing = offlinePrimaryVertices.clone()
 if options.gpu:
-    process.vertexing = offlinePrimaryVerticesCUDA.clone()
+    process.vertex = offlinePrimaryVerticesCUDA.clone()
+else:
+    process.vertex = offlinePrimaryVertices.clone()
+
+process.vertexAnalysis.vertexRecoCollections  = cms.VInputTag("vertex")
+process.pvMonitor.vertexLabel = cms.InputTag("vertex")
 
 if options.both:
     suff = "gpuVScpu"
@@ -164,14 +171,14 @@ process.DQMOfflineVertex = cms.Sequence(process.pvMonitor)
 process.dqmoffline_step = cms.EndPath(process.DQMOfflineVertex)
 process.DQMoutput_step = cms.EndPath(process.DQMoutput)
 
-process.vertexing_step = cms.Path(process.vertexing)
+process.vertexing_step = cms.Path(process.vertex)
 process.output_step = cms.EndPath(process.output)
 
 process.schedule = cms.Schedule(process.vertexing_step)
 
 if options.timing:
 
-    process.consumer = cms.EDAnalyzer("GenericConsumer", eventProducts = cms.untracked.vstring("offlinePrimaryVertices"))
+    process.consumer = cms.EDAnalyzer("GenericConsumer", eventProducts = cms.untracked.vstring("vertex"))
     process.consume_step = cms.EndPath(process.consumer)
     process.schedule.append(process.consume_step)
 
@@ -180,14 +187,14 @@ else:
 
 if options.both:
 
-    process.offlinePrimaryVertices = offlinePrimaryVertices.clone()
-    process.offlinePrimaryVerticesCUDA = offlinePrimaryVerticesCUDA.clone()
-    process.vertexing_step = cms.Path(process.offlinePrimaryVertices,process.offlinePrimaryVerticesCUDA)
-    process.consumerCPU = cms.EDAnalyzer("GenericConsumer", eventProducts = cms.untracked.vstring("offlinePrimaryVertices"))
-    process.consumerGPU = cms.EDAnalyzer("GenericConsumer", eventProducts = cms.untracked.vstring("offlinePrimaryVerticesCUDA"))
+    process.vertex = offlinePrimaryVertices.clone()
+    process.vertexCUDA = offlinePrimaryVerticesCUDA.clone()
+    process.vertexing_step = cms.Path(process.vertex,process.vertexCUDA)
+    process.consumerCPU = cms.EDAnalyzer("GenericConsumer", eventProducts = cms.untracked.vstring("vertex"))
+    process.consumerGPU = cms.EDAnalyzer("GenericConsumer", eventProducts = cms.untracked.vstring("vertexCUDA"))
     process.consume_step = cms.EndPath(process.consumerCPU,process.consumerGPU)
 
     if not options.timing:
-        process.vertexAnalysis = cms.VInputTag("offlinePrimaryVertices","offlinePrimaryVerticesCUDA")
+        process.vertexAnalysis.vertexRecoCollections = cms.VInputTag("vertex","vertexCUDA")
 
     process.schedule.append(process.consume_step)

@@ -56,7 +56,7 @@ vertexAnalysis = cms.EDProducer("PrimaryVertexAnalyzer4PUSlimmed",
     use_only_charged_tracks = cms.untracked.bool(True),
     verbose = cms.untracked.bool(False),
     vertexAssociator = cms.untracked.InputTag("VertexAssociatorByPositionAndTracks"),
-    vertexRecoCollections = cms.VInputTag("offlinePrimaryVertices")
+    vertexRecoCollections = cms.VInputTag("")
 )
 
 
@@ -86,5 +86,5 @@ pvMonitor = cms.EDProducer("PrimaryVertexMonitor",
     beamSpotLabel = cms.InputTag("offlineBeamSpot"),
     ndof = cms.int32(4),
     useHPforAlignmentPlots = cms.bool(True),
-    vertexLabel = cms.InputTag("offlinePrimaryVertices")
+    vertexLabel = cms.InputTag("")
 )
