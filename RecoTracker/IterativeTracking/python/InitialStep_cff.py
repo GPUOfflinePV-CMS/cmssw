@@ -281,10 +281,12 @@ phase2_timing_layer.toModify(initialStepTracks, TrajectoryInEvent = True)
 
 #vertices
 from RecoVertex.PrimaryVertexProducer.OfflinePrimaryVertices_cfi import offlinePrimaryVertices as _offlinePrimaryVertices
+
 firstStepPrimaryVerticesUnsorted = _offlinePrimaryVertices.clone(
     TrackLabel = 'initialStepTracks',
     vertexCollections = [_offlinePrimaryVertices.vertexCollections[0].clone()]
 )
+
 (pp_on_XeXe_2017 | pp_on_AA).toModify(firstStepPrimaryVerticesUnsorted,
     TkFilterParameters = dict(
         trackQuality = 'any',
